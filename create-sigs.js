@@ -8,7 +8,7 @@ const EthCrypto = require("eth-crypto");
 //  { type: "string", value: "Hello World!" },
 //]);
 
-const contractAddress = "0xf2899ad13B7F97Bc3e01DC4a5a8d273ea7752609";
+const contractAddress = "0x1a51053bD31cbbDbf0a5EAB4517E74435e9C397B";
 const payeeAddress = "0x39Cd295191EdF125b46a5e73593666f1b238B7e8";
 
 console.log("⚙️  Generating signatures for", contractAddress);

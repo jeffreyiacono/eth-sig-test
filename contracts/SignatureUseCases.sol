@@ -95,10 +95,11 @@ contract SignatureUseCases {
         return (v, r, s);
     }
 
-    // Builds a prefixed hash to mimic the behavior of eth_sign.
+    // should use "\x19Ethereum Signed Message:\n000000"; as header and
+    // include length, but just returning the hash - build this out in the
+    // future like they have @ https://docs.ethers.io/v4/cookbook-signing.html
     function prefixed(bytes32 hash) internal pure returns (bytes32) {
         return (hash);
-        //return keccak256(abi.encodePacked("\x19Ethereum Signed Message:\n32", hash));
     }
 
     modifier restrictedToOwner() {

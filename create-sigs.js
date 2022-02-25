@@ -23,21 +23,25 @@ const claimPaymentSignature = EthCrypto.sign(
   claimPaymentMessage
 );
 
-// console.log(`Message: ${claimPaymentMessage}`);
+console.log(
+  ` - 📝  Hashed claimPaymentMessage that can be used with sig to verify signer: ${claimPaymentMessage}`
+);
 console.log(
   ` - ✍️  Signature to use for claimPayment: ${claimPaymentSignature}`
 );
 
-const claimBountyMessage = EthCrypto.hash.keccak256([
+const claimCodeMessage = EthCrypto.hash.keccak256([
   { type: "string", value: "dan tong #1" },
   { type: "address", value: contractAddress },
 ]);
-const claimBountySignature = EthCrypto.sign(
+const claimCodeSignature = EthCrypto.sign(
   process.env.PRIVATE_KEY,
-  claimBountyMessage
+  claimCodeMessage
 );
 
-// console.log(`Message: ${claimBountyMessage}`);
 console.log(
-  ` - ✍️  Signature to use for claimPayment: ${claimBountySignature}`
+  ` - 📝  Hashed claimCodeMessage that can be used with sig to verify signer: ${claimCodeMessage}`
+);
+console.log(
+  ` - ✍️  Signature to use for claimCodeSignature: ${claimCodeSignature}`
 );

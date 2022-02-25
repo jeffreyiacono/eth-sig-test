@@ -3,53 +3,63 @@ pragma solidity ^0.8.4;
 
 contract SignatureUseCases {
     address public owner = msg.sender;
-    uint public balance;
+    uint public balanceInWei;
 
     mapping(uint256 => bool) usedNonces;
+    mapping(string => bool) usedCodes;
 
     constructor() {
-        balance = 0;
+        balanceInWei = 0;
     }
 
     function deposit() public payable restrictedToOwner {
-        balance += msg.value;
+        balanceInWei += msg.value;
     }
 
-    // like a checking account -- amount is check amount, nonce is physical check, sig is verification
-    // that check if valid
-    function claimPayment(uint256 amount, uint256 nonce, bytes memory sig) public {
+    // Like a checking account -- payeeAddress is where the amount will go,
+    // nonce prevents re-usage, and sig verifies owner has authorized this
+    // transfer
+    //
+    // If a malicious actor got their hands on all of this information, all
+    // they would be doing is paying the fees to have this transfer performed.
+    function claimPayment(address payeeAddress, uint256 amountInEther, uint256 nonce, bytes memory sig) public {
         require(!usedNonces[nonce]);
         usedNonces[nonce] = true;
 
-        require(isValidDataForAmountNonce(amount, nonce, sig), "Invalid signature");
-        require(balance - amount >= 0, "Insufficient funds, owner needs to deposit more");
+        uint256 amountInWei = amountInEther * 1e18;
+        balanceInWei -= amountInWei;
+        require(balanceInWei >= 0, "Insufficient funds, owner needs to deposit more");
+        require(isValidDataToClaimPayment(payeeAddress, amountInEther, nonce, sig), "Invalid signature");
 
-        (bool sent, ) = msg.sender.call{value: amount}("");
-        require(sent, "Failed to send Ether");
+        payable(payeeAddress).transfer(amountInWei);
     }
 
-    // received a code for accomplishing something first (coding challenge, physically
+    // Received a code for accomplishing something first (coding challenge, physically
     // going somewhere that had the code, etc.) -- amount hardcoded
-    function claimBounty(string memory code, bytes memory sig) public {
-        uint amount = 0.1 ether;
-        require(isValidDataForCode(code, sig), "Invalid signature");
-        require(balance - amount >= 0, "Insufficient funds, owner needs to deposit more");
+    function claimCode(string memory code, bytes memory sig) public {
+        require(!usedCodes[code]);
+        usedCodes[code] = true;
 
-        (bool sent, ) = msg.sender.call{value: amount}("");
-        require(sent, "Failed to send Ether");
+        uint amountInWei = 1e18; // 1 ether, or could make dyanmic w/ code changes
+
+        balanceInWei -= amountInWei;
+        require(balanceInWei >= 0, "Insufficient funds, owner needs to deposit more");
+        require(isValidDataToClaimCode(code, sig), "Invalid signature");
+
+        payable(msg.sender).transfer(amountInWei);
     }
 
-    // Destroy contract and reclaim leftover funds.
+    // Destroy contract and return leftover funds to owner
     function destory() public restrictedToOwner {
         selfdestruct(payable(owner));
     }
 
-    function isValidDataForAmountNonce(uint256 _transferAmount, uint256 _nonce, bytes memory sig) private view returns (bool){
-        bytes32 message = prefixed(keccak256(abi.encodePacked(_transferAmount, _nonce, address(this))));
+    function isValidDataToClaimPayment(address _payeeAddress, uint256 _transferAmount, uint256 _nonce, bytes memory sig) private view returns (bool){
+        bytes32 message = prefixed(keccak256(abi.encodePacked(_payeeAddress, _transferAmount, _nonce, address(this))));
         return (recoverSigner(message, sig) == owner);
     }
 
-    function isValidDataForCode(string memory _code, bytes memory sig) private view returns (bool){
+    function isValidDataToClaimCode(string memory _code, bytes memory sig) private view returns (bool){
         bytes32 message = prefixed(keccak256(abi.encodePacked(_code, address(this))));
         return (recoverSigner(message, sig) == owner);
     }

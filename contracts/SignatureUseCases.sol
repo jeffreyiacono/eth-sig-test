@@ -54,18 +54,22 @@ contract SignatureUseCases {
         selfdestruct(payable(owner));
     }
 
-    function isValidDataToClaimPayment(address _payeeAddress, uint256 _transferAmount, uint256 _nonce, bytes memory sig) private view returns (bool){
+    function isValidDataToClaimPayment(address _payeeAddress, uint256 _transferAmount, uint256 _nonce, bytes memory sig) public view returns (bool){
         bytes32 message = prefixed(keccak256(abi.encodePacked(_payeeAddress, _transferAmount, _nonce, address(this))));
-        return (recoverSigner(message, sig) == owner);
+        return signerIsContractOwner(message, sig);
     }
 
-    function isValidDataToClaimCode(string memory _code, bytes memory sig) private view returns (bool){
+    function isValidDataToClaimCode(string memory _code, bytes memory sig) public view returns (bool){
         bytes32 message = prefixed(keccak256(abi.encodePacked(_code, address(this))));
-        return (recoverSigner(message, sig) == owner);
+        return signerIsContractOwner(message, sig);
     }
 
     // Signature methods
-    function recoverSigner(bytes32 message, bytes memory sig) private pure returns (address) {
+    function signerIsContractOwner(bytes32 message, bytes memory sig) public view returns (bool) {
+      return (recoverSigner(message, sig) == owner);
+    }
+
+    function recoverSigner(bytes32 message, bytes memory sig) public pure returns (address) {
         uint8 v;
         bytes32 r;
         bytes32 s;

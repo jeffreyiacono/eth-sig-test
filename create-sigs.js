@@ -1,8 +1,8 @@
 require("dotenv").config();
 const EthCrypto = require("eth-crypto");
 
-const contractAddress = "0x1a51053bD31cbbDbf0a5EAB4517E74435e9C397B";
-const payeeAddress = "0x39Cd295191EdF125b46a5e73593666f1b238B7e8";
+const contractAddress = "0x92c8ddd9CE4C4b37fB2165a2B31ad6c2E1C8B34e";
+const payeeAddress = "0x8Cd317Bcd6c79f3993dd25F971B3C728Fa0c1Cf5"; // dt's address
 
 hashAndSign = (content, private_key) => {
   const message = EthCrypto.hash.keccak256(content);
